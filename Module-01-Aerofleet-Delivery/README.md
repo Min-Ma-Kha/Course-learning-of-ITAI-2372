@@ -1,7 +1,9 @@
 # Aerofleet Delivery: Process Mapping for AI Integration
 
 **ITAI 2372 · Module 01 assignment: Process Mapping for AI Integration**
+
 **Author:** Min Ma Kha
+
 **Industry:** Logistics (last-mile drone delivery)
 
 Aerofleet Delivery flies small retail orders from a store's drone hub to a designated drop zone in the customer's yard, with a 30-minute delivery target. This project maps that workflow using the Input → Process → Decision → Action → Outcome framework and identifies where AI adds value, and where a human must stay in the loop.
