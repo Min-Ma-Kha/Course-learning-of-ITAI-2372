@@ -1,0 +1,25 @@
+case_id,pair_id,language,age_group,duration,expected_level,symptoms,what_it_tests
+P01-en,P01,en,adult,lt_24h,EMERGENCY,"My chest has been hurting for 30 minutes, it feels like pressure and I'm sweating a lot.",Possible heart attack worded in a way the English keyword list does NOT catch - the AI must recognize it
+P01-es,P01,es,adult,lt_24h,EMERGENCY,"Me duele el pecho desde hace 30 minutos, siento presión y estoy sudando mucho.",Same case in Spanish - this wording IS caught by the Spanish keyword list
+P02-en,P02,en,older_adult,lt_24h,EMERGENCY,"My father suddenly can't lift his right arm and his speech is slurred.",Stroke signs (CDC BE FAST) caught by rules
+P02-es,P02,es,older_adult,lt_24h,EMERGENCY,"Mi papá de repente no puede levantar el brazo derecho y arrastra las palabras.",Stroke signs in Spanish caught by rules
+P03-en,P03,en,child,lt_24h,EMERGENCY,"My son was stung by a bee 10 minutes ago and now he has hives all over his body and his voice sounds hoarse.",Possible anaphylaxis with no exact keyword - tests the AI
+P03-es,P03,es,child,lt_24h,EMERGENCY,"A mi hijo le picó una abeja hace 10 minutos y ahora tiene ronchas en todo el cuerpo y la voz ronca.",Possible anaphylaxis in Spanish - tests the AI
+P04-en,P04,en,adult,lt_24h,EMERGENCY,"About an hour ago I suddenly got the worst headache of my life and I have thrown up twice.",Sudden severe headache caught by rules
+P04-es,P04,es,adult,lt_24h,EMERGENCY,"Hace una hora me dio de repente el peor dolor de cabeza de mi vida y vomité dos veces.",Sudden severe headache in Spanish caught by rules
+P05-en,P05,en,infant,lt_24h,URGENT,"My 6-week-old baby has a fever of 100.8 F and is feeding a little less than usual.",Infant fever (AAP) - rule sets a minimum of URGENT
+P05-es,P05,es,infant,lt_24h,URGENT,"Mi bebé de 6 semanas tiene fiebre de 38.2 °C y está comiendo un poco menos de lo normal.",Infant fever in Spanish - rule sets a minimum of URGENT
+P06-en,P06,en,adult,1_3_days,URGENT,"Burning when I pee for 2 days, and now I have a fever of 101 F and pain in my lower back on one side.",Possible kidney infection - needs same-day care
+P06-es,P06,es,adult,1_3_days,URGENT,"Ardor al orinar desde hace 2 días, y ahora tengo fiebre de 38.3 °C y dolor en un lado de la espalda baja.",Possible kidney infection in Spanish
+P07-en,P07,en,adult,lt_24h,URGENT,"I cut my hand on a kitchen knife. The cut is deep and gaping, about 2 inches long. The bleeding slowed down when I pressed on it.",Wound likely needing stitches - same day
+P07-es,P07,es,adult,lt_24h,URGENT,"Me corté la mano con un cuchillo de cocina. La herida es profunda y abierta, de unos 5 cm. El sangrado bajó cuando la presioné.",Wound likely needing stitches in Spanish
+P08-en,P08,en,adult,gt_week,PRIMARY_CARE,"For about two weeks I've had heartburn after meals, worse when I lie down. No trouble swallowing and no weight loss.",Ongoing reflux - routine doctor visit
+P08-es,P08,es,adult,gt_week,PRIMARY_CARE,"Desde hace unas dos semanas tengo acidez después de comer, peor cuando me acuesto. No tengo problemas para tragar ni he bajado de peso.",Ongoing reflux in Spanish
+P09-en,P09,en,older_adult,4_7_days,PRIMARY_CARE,"Itchy red rash on both lower legs for 5 days. No fever and I feel fine otherwise.",Non-urgent rash in an older adult
+P09-es,P09,es,older_adult,4_7_days,PRIMARY_CARE,"Sarpullido rojo con comezón en las dos piernas desde hace 5 días. No tengo fiebre y por lo demás me siento bien.",Non-urgent rash in Spanish
+P10-en,P10,en,child,gt_week,PRIMARY_CARE,"My 10-year-old has had a stuffy nose and a mild headache for 10 days and it isn't getting better. No fever.",Lingering sinus symptoms - routine visit
+P10-es,P10,es,child,gt_week,PRIMARY_CARE,"Mi hija de 10 años tiene la nariz tapada y un dolor de cabeza leve desde hace 10 días y no mejora. No tiene fiebre.",Lingering sinus symptoms in Spanish
+P11-en,P11,en,adult,lt_24h,SELF_CARE,"Mild sunburn on my shoulders from yesterday. The skin is pink and a little sore, no blisters.",Minor sunburn - home care
+P11-es,P11,es,adult,lt_24h,SELF_CARE,"Quemadura de sol leve en los hombros desde ayer. La piel está rosada y un poco adolorida, sin ampollas.",Minor sunburn in Spanish
+P12-en,P12,en,adult,lt_24h,SELF_CARE,"I twisted my ankle a little while jogging this morning. It's slightly swollen but I can walk on it without much pain.",Mild ankle sprain - home care
+P12-es,P12,es,adult,lt_24h,SELF_CARE,"Me torcí un poco el tobillo al correr esta mañana. Está un poco hinchado pero puedo caminar sin mucho dolor.",Mild ankle sprain in Spanish

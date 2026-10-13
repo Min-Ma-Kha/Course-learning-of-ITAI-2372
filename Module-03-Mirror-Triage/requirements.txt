@@ -1,0 +1,8 @@
+# Mirror Triage - Python packages the app needs.
+# Install with:  pip install -r requirements.txt
+streamlit>=1.50        # turns the Python script into a web app
+google-genai>=2.30     # Google's official Gemini SDK (Interactions API + structured output)
+pydantic>=2.0          # validates the AI's structured answers
+
+# For running the automated tests only (not needed by the app itself):
+#   pip install pytest
