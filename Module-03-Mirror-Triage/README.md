@@ -1,7 +1,6 @@
 # 🪞 Mirror Triage
 
-**ITAI 2372 · Module 03 · AI in Healthcare** — Houston City College, AAS in Artificial Intelligence
-**Author:** Min Ma Kha
+**ITAI 2372 · Module 03 · AI in Healthcare** 
 
 > A bilingual (English / Spanish) AI symptom-triage app that tells patients **how soon** to seek care, in their own language — and *mirrors* the same case as an English summary for the clinic.
 
