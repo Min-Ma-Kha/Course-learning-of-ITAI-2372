@@ -1,0 +1,14 @@
+# --- NEVER upload secrets (API keys) to GitHub ---
+.streamlit/secrets.toml
+.env
+*.env
+
+# Python clutter
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# Evaluation output (re-create any time with: python evaluate.py)
+results/
