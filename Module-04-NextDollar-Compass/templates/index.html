@@ -1,0 +1,285 @@
+<!doctype html>
+<!--
+  templates/index.html - the page the browser shows.
+
+  Course: ITAI 2372 - Module 04 (AI in Finance) | Project: NextDollar Compass
+
+  How this file works:
+  * Flask fills in the double-curly-brace parts (Jinja templates) before sending the page.
+  * The layout is plain HTML. static/css/style.css makes it look good.
+  * static/js/app.js adds the behavior: it sends what you type to the Flask
+    /api/... routes with fetch() and draws the results (charts are hand-made SVG,
+    so the app needs no extra libraries).
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NextDollar Compass</title>
+  <meta name="description" content="Give every next dollar a direction: turn your paycheck, bills and debts into a month-by-month plan for your goals.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23e4ebf7' stroke='%2316302a' stroke-width='2'/%3E%3Cpath d='M16 4.5 19.6 16h-7.2z' fill='%232c7a55'/%3E%3Cpath d='M16 27.5 12.4 16h7.2z' fill='%2374867f'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<a class="skip" href="#workspace">Skip to the planner</a>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13.5"/><path class="needle-n" d="M16 4.5 19.6 16h-7.2z"/><path class="needle-s" d="M16 27.5 12.4 16h7.2z"/><circle class="hub" cx="16" cy="16" r="1.7"/></svg>
+    <span>NextDollar Compass</span>
+  </div>
+  <div class="topbar-actions">
+    <button type="button" class="btn ghost" id="loadSample">Try a sample household</button>
+    <span class="ai-pill {{ 'on' if ai_enabled else 'off' }}" title="{{ 'Gemini model: ' + model if ai_enabled else 'Add GEMINI_API_KEY to turn on AI features' }}">
+      {{ 'Gemini on' if ai_enabled else 'Offline mode' }}
+    </span>
+  </div>
+</header>
+
+<div class="shell">
+  <!-- The check stub: a live summary of this month's paycheck -->
+  <aside class="stub" aria-label="This month at a glance">
+    <p class="stub-title">This month</p>
+    <p class="stub-income"><span id="stubIncome">$0</span><small>take-home pay</small></p>
+    <div class="split" id="stubSplit" role="img" aria-label="How your take-home pay is split"></div>
+    <dl class="stub-lines" id="stubLines"></dl>
+    <p class="stub-memo" id="stubMemo">Add your pay to start.</p>
+  </aside>
+
+  <main id="workspace" class="workspace">
+    <nav class="steps" aria-label="Planner steps">
+      <ol>
+        <li><button type="button" data-step="1" class="step-btn active" aria-current="step"><b>1</b> Income</button></li>
+        <li><button type="button" data-step="2" class="step-btn"><b>2</b> Spending</button></li>
+        <li><button type="button" data-step="3" class="step-btn"><b>3</b> Debts</button></li>
+        <li><button type="button" data-step="4" class="step-btn"><b>4</b> Goals &amp; values</button></li>
+        <li><button type="button" data-step="5" class="step-btn"><b>5</b> Your plan</button></li>
+      </ol>
+    </nav>
+
+    <!-- STEP 1: INCOME -->
+    <section class="panel" data-panel="1">
+      <h1>What do you take home?</h1>
+      <p class="lede">Upload a pay stub and the app reads it for you, or type the numbers in.</p>
+
+      <label class="drop paystub" data-doc="paystub">
+        <input type="file" accept=".pdf,image/*" hidden>
+        <span class="drop-title">Upload a pay stub</span>
+        <span class="drop-hint">PDF or photo. Black out your name, address and account numbers first.</span>
+      </label>
+      <p class="msg" id="msg-paystub" role="status" aria-live="polite"></p>
+
+      <h2>Paychecks</h2>
+      <div id="paychecks" class="rows"></div>
+      <button type="button" class="btn small" id="addPaycheck">Add another job</button>
+
+      <h2>Other income</h2>
+      <p class="hint">Side jobs, rental income, benefits - anything that arrives regularly.</p>
+      <div id="otherIncome" class="rows"></div>
+      <button type="button" class="btn small" id="addOther">Add other income</button>
+
+      <h2>Savings you already have</h2>
+      <div class="field narrow">
+        <label for="currentSavings">Total in savings today</label>
+        <input id="currentSavings" inputmode="decimal" placeholder="0">
+      </div>
+
+      <div class="next"><button type="button" class="btn primary" data-go="2">Next: spending</button></div>
+    </section>
+
+    <!-- STEP 2: SPENDING -->
+    <section class="panel" data-panel="2" hidden>
+      <h1>Where does it go?</h1>
+      <p class="lede">List what you spend, or upload a bank export. A machine-learning model sorts each expense into a category.</p>
+
+      <div class="add-expense">
+        <div class="field grow"><label for="expDesc">Expense</label><input id="expDesc" placeholder="e.g. HEB groceries, Netflix, rent"></div>
+        <div class="field"><label for="expAmt">Amount</label><input id="expAmt" inputmode="decimal" placeholder="0"></div>
+        <div class="field"><label for="expFreq">How often</label>
+          <select id="expFreq"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="quarterly">Every 3 months</option><option value="yearly">Yearly</option></select></div>
+        <button type="button" class="btn primary" id="addExpense">Add</button>
+      </div>
+      <div class="quick" id="quickAdd" aria-label="Common expenses"></div>
+
+      <label class="drop compact" data-doc="bank_csv">
+        <input type="file" accept=".csv,text/csv" hidden>
+        <span class="drop-title">Upload a bank export (CSV)</span>
+        <span class="drop-hint">Needs a description column and an amount column. Deposits are skipped.</span>
+      </label>
+      <p class="msg" id="msg-bank_csv" role="status" aria-live="polite"></p>
+
+      <div class="table-wrap">
+        <table class="expenses" aria-label="Your expenses">
+          <thead><tr><th>Expense</th><th class="num">Monthly</th><th>Category</th><th>Sorted by</th><th><span class="sr">Remove</span></th></tr></thead>
+          <tbody id="expenseRows"></tbody>
+        </table>
+        <p class="empty" id="expenseEmpty">No expenses yet. Add a few above, or load the sample household.</p>
+      </div>
+      <div class="row-actions">
+        <button type="button" class="btn" id="sortExpenses">Sort my expenses</button>
+        <span class="hint" id="modelNote">
+          {% if evaluation %}Model: {{ evaluation.chosen_model }} trained on {{ "{:,}".format(evaluation.rows) }} example transactions.
+          On merchants it never saw, it labels about {{ "%.0f"|format(evaluation.confidence_threshold_test_b[1].share_auto_labeled * 100) }}% on its own and gets
+          {{ "%.0f"|format(evaluation.confidence_threshold_test_b[1].accuracy_when_auto_labeled * 100) }}% of those right; the rest go to Gemini or are marked "check".{% endif %}
+        </span>
+      </div>
+      <div id="spendBars" class="bars"></div>
+
+      <div class="next"><button type="button" class="btn" data-go="1">Back</button><button type="button" class="btn primary" data-go="3">Next: debts</button></div>
+    </section>
+
+    <!-- STEP 3: DEBTS -->
+    <section class="panel" data-panel="3" hidden>
+      <h1>What do you owe?</h1>
+      <p class="lede">Upload a statement to fill in the numbers, or add each debt by hand. Leave this empty if you have no debts.</p>
+
+      <div class="drop-row">
+        <label class="drop compact" data-doc="credit_card"><input type="file" accept=".pdf,image/*" hidden><span class="drop-title">Credit card statement</span><span class="drop-hint">or card agreement</span></label>
+        <label class="drop compact" data-doc="car_loan"><input type="file" accept=".pdf,image/*" hidden><span class="drop-title">Car loan statement</span><span class="drop-hint">PDF or photo</span></label>
+        <label class="drop compact" data-doc="mortgage"><input type="file" accept=".pdf,image/*" hidden><span class="drop-title">Mortgage statement</span><span class="drop-hint">PDF or photo</span></label>
+      </div>
+      <p class="msg" id="msg-debts" role="status" aria-live="polite"></p>
+
+      <div class="add-debt">
+        <span>Add by hand:</span>
+        <button type="button" class="btn small" data-add-debt="credit_card">Credit card</button>
+        <button type="button" class="btn small" data-add-debt="car">Car loan</button>
+        <button type="button" class="btn small" data-add-debt="mortgage">Mortgage</button>
+        <button type="button" class="btn small" data-add-debt="student">Student loan</button>
+        <button type="button" class="btn small" data-add-debt="personal">Personal loan</button>
+      </div>
+      <div id="debtList" class="debt-list"></div>
+
+      <fieldset class="method">
+        <legend>When paying off more than one card or loan, put extra money on:</legend>
+        <label><input type="radio" name="method" value="avalanche" checked> <b>Highest interest first</b> <span>(avalanche) - least interest paid overall</span></label>
+        <label><input type="radio" name="method" value="snowball"> <b>Smallest balance first</b> <span>(snowball) - quick wins to stay motivated</span></label>
+      </fieldset>
+
+      <div class="next"><button type="button" class="btn" data-go="2">Back</button><button type="button" class="btn primary" data-go="4">Next: goals</button></div>
+    </section>
+
+    <!-- STEP 4: GOALS & VALUES -->
+    <section class="panel" data-panel="4" hidden>
+      <h1>What do you want your money to do?</h1>
+      <p class="lede">Pick your goals, then put them in order. Your first goal gets the biggest share of your free cash; when a goal is done, its money moves down the list.</p>
+
+      <div class="goal-picker" id="goalPicker"></div>
+      <h2>Your order</h2>
+      <ol class="goal-order" id="goalOrder"></ol>
+      <p class="empty" id="goalEmpty">Choose at least one goal above.</p>
+
+      <div id="investPrefs" class="invest-prefs" hidden>
+        <h2>Investing preferences</h2>
+        <fieldset class="checks">
+          <legend>What would you like to learn about?</legend>
+          <label><input type="checkbox" name="asset" value="etfs" checked> Index funds and ETFs</label>
+          <label><input type="checkbox" name="asset" value="stocks"> Individual stocks</label>
+          <label><input type="checkbox" name="asset" value="crypto"> Crypto</label>
+        </fieldset>
+        <fieldset class="risk">
+          <legend>How would you feel if your investments dropped 25% in a bad year?</legend>
+          <label><input type="radio" name="risk" value="conservative"> <b>I'd lose sleep</b><span>Steady - more bonds and cash</span></label>
+          <label><input type="radio" name="risk" value="moderate" checked> <b>Uneasy, but I'd wait</b><span>Balanced mix</span></label>
+          <label><input type="radio" name="risk" value="aggressive"> <b>I'd keep investing</b><span>Growth - mostly stocks</span></label>
+        </fieldset>
+        <div class="field-row">
+          <div class="field"><label for="horizon">Years until you need this money</label><input id="horizon" inputmode="numeric" value="10"></div>
+          <div class="field grow"><label for="screen">Values or religious guidelines</label>
+            <select id="screen">{% for key, label in screens.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></div>
+        </div>
+        <div class="field"><label for="customValues">Anything else to avoid? (optional)</label><input id="customValues" placeholder="e.g. no weapons makers, no tobacco"></div>
+      </div>
+
+      <div class="next"><button type="button" class="btn" data-go="3">Back</button><button type="button" class="btn primary" data-go="5" id="buildPlan">Build my plan</button></div>
+    </section>
+
+    <!-- STEP 5: THE PLAN -->
+    <section class="panel" data-panel="5" hidden>
+      <div class="plan-empty" id="planEmpty">
+        <h1>Your plan will appear here</h1>
+        <p class="lede">Fill in steps 1 to 4, or try the sample household to see a finished plan.</p>
+      </div>
+      <div id="plan" hidden>
+        <div class="story">
+          <p class="story-source" id="storySource"></p>
+          <h1 id="storyHeadline"></h1>
+          <p id="storySummary"></p>
+          <h2>This month</h2>
+          <ol id="storySteps" class="checklist"></ol>
+          <ul id="storyWatch" class="watch"></ul>
+          <p class="story-end" id="storyEnd"></p>
+          <button type="button" class="btn small" id="reExplain" hidden>Update the explanation</button>
+        </div>
+
+        <section class="block">
+          <h2>Where each dollar goes</h2>
+          <div id="ruleBar" class="rule-bar"></div>
+          <div id="ruleNote"></div>
+          <div class="whatif">
+            <label for="cut">What if I cut my "wants" by <output id="cutOut">0%</output>?</label>
+            <input type="range" id="cut" min="0" max="50" step="5" value="0">
+          </div>
+        </section>
+
+        <section class="block">
+          <h2>Your goals, step by step</h2>
+          <div id="goalCards" class="goal-cards"></div>
+        </section>
+
+        <section class="block">
+          <h2>Timeline</h2>
+          <div id="timelineChart" class="chart"></div>
+          <ol id="milestones" class="milestones"></ol>
+        </section>
+
+        <section class="block" id="debtBlock">
+          <h2>Debts</h2>
+          <div id="debtSummary"></div>
+          <div id="strategyTable"></div>
+        </section>
+
+        <section class="block" id="investBlock">
+          <h2>Investing options</h2>
+          <p class="disclaimer" id="investDisclaimer"></p>
+          <div id="mixBar" class="rule-bar"></div>
+          <div id="sleeves" class="sleeves"></div>
+          <div id="picks"></div>
+          <ul id="investNotes" class="notes"></ul>
+        </section>
+
+        <section class="block">
+          <h2>Spending by category</h2>
+          <div id="planSpend" class="bars"></div>
+        </section>
+
+        <section class="block ask">
+          <h2>Ask about your plan</h2>
+          <div class="chips" id="askChips"></div>
+          <div class="chat" id="chat" aria-live="polite"></div>
+          <form id="askForm" class="ask-form">
+            <label for="askInput" class="sr">Your question</label>
+            <input id="askInput" placeholder="e.g. What happens if I pay $200 more on my car?" autocomplete="off">
+            <button class="btn primary" type="submit">Ask</button>
+          </form>
+        </section>
+
+        <div class="plan-actions">
+          <button type="button" class="btn" id="printPlan">Print or save as PDF</button>
+          <button type="button" class="btn" data-go="4">Change goals</button>
+        </div>
+        <p class="fineprint">NextDollar Compass is a student project for ITAI 2372 (AI in Finance). It is for learning only and is not financial, tax, legal or investment advice. All calculations are estimates. Nothing you enter is saved by this app.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>window.APP = {ai: {{ 'true' if ai_enabled else 'false' }}};</script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
