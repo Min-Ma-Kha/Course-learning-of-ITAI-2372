@@ -1,9 +1,0 @@
-flask>=3.0
-scikit-learn>=1.5
-pandas>=2.2
-joblib>=1.4
-google-genai>=1.30
-pydantic>=2.7
-python-dotenv>=1.0
-pypdf>=4.0
-reportlab>=4.0   # only needed to re-create the sample documents
