@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_name }}</title>
+  <style>
+    :root {
+      --ink: #1d2433;
+      --muted: #5d6779;
+      --line: #dfe3ea;
+      --bg: #f5f3ee;
+      --card: #ffffff;
+      --accent: #1f5f4a;
+      --accent-dark: #164636;
+      --accent-soft: #e6f1ec;
+      --warn: #8a4b08;
+      --warn-soft: #fdf3e3;
+      --bad: #9b1c1c;
+      --bad-soft: #fdecec;
+      --ok: #1f6b3a;
+      --ok-soft: #e7f4ec;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+    header.top {
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      padding: 14px 24px; background: var(--ink); color: #fff; flex-wrap: wrap;
+    }
+    .brand { font-weight: 750; letter-spacing: .2px; font-size: 1.05rem; }
+    .brand span { color: #9fd3bd; margin-right: 6px; }
+    .model { font-size: .82rem; color: #c9cfdb; font-family: ui-monospace, Consolas, monospace; }
+    main.grid {
+      max-width: 1180px; margin: 28px auto; padding: 0 16px;
+      display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 22px; align-items: start;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      padding: 22px 24px; margin-bottom: 18px; box-shadow: 0 6px 22px rgb(29 36 51 / 5%);
+    }
+    h1 { font-size: 1.45rem; margin: 0 0 6px; }
+    h2 { font-size: 1.05rem; margin: 0 0 12px; }
+    .lead { color: var(--muted); margin: 0 0 14px; font-size: .95rem; }
+    label { display: block; margin: 16px 0 6px; font-weight: 650; font-size: .93rem; }
+    label .sub { font-weight: 400; color: var(--muted); font-size: .85rem; }
+    input, textarea, select, button { font: inherit; }
+    input, textarea, select {
+      width: 100%; padding: 10px 12px; border: 1px solid #c8cfda; border-radius: 9px; background: #fff; color: var(--ink);
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    input:focus, textarea:focus, select:focus { outline: 3px solid #b9dccd; border-color: var(--accent); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .hint { color: var(--muted); font-size: .84rem; margin: 6px 0 0; }
+    .actions { display: flex; gap: 10px; margin-top: 20px; }
+    button.primary {
+      flex: 1; padding: 12px; border: 0; border-radius: 9px; background: var(--accent); color: #fff; font-weight: 700; cursor: pointer;
+    }
+    button.primary:hover { background: var(--accent-dark); }
+    button.primary:disabled { opacity: .7; cursor: progress; }
+    button.ghost {
+      padding: 8px 14px; border: 1px solid var(--line); border-radius: 9px; background: #fff; color: var(--ink); cursor: pointer; font-size: .88rem;
+    }
+    button.ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .alert { background: var(--bad-soft); color: var(--bad); border: 1px solid #f3c4c4; border-radius: 9px; padding: 10px 14px; margin-bottom: 6px; }
+    .alert ul { margin: 0; padding-left: 18px; }
+    .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .card-head h2 { margin: 0; }
+    .result { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 1.02rem; line-height: 1.75; }
+    .meta { color: var(--muted); font-size: .84rem; margin: 14px 0 0; border-top: 1px dashed var(--line); padding-top: 10px; }
+    .status { border-radius: 9px; padding: 10px 14px; font-weight: 650; margin-bottom: 12px; }
+    .status.good { background: var(--ok-soft); color: var(--ok); }
+    .status.review { background: var(--warn-soft); color: var(--warn); }
+    .checks { list-style: none; padding: 0; margin: 0; }
+    .checks li { padding: 9px 0 9px 28px; border-bottom: 1px solid #eef0f4; position: relative; font-size: .93rem; }
+    .checks li:last-child { border-bottom: 0; }
+    .checks li::before { position: absolute; left: 2px; top: 8px; font-weight: 800; }
+    .checks li.ok::before { content: "✓"; color: var(--ok); }
+    .checks li.warn::before { content: "!"; color: var(--warn); left: 7px; }
+    .checks li.flag::before { content: "⚑"; color: var(--bad); }
+    .ctx { display: block; color: var(--muted); font-size: .84rem; margin-top: 2px; }
+    .note { background: var(--accent-soft); border-radius: 9px; padding: 10px 14px; font-size: .9rem; margin: 0 0 12px; }
+    .trace { margin: 0; padding-left: 20px; font-size: .92rem; }
+    .trace li { margin-bottom: 6px; }
+    .steps { margin: 0; padding-left: 20px; }
+    .steps li { margin-bottom: 8px; }
+    .disclaimer { color: var(--muted); font-size: .84rem; text-align: center; margin-top: 4px; }
+    @media (max-width: 860px) {
+      main.grid { grid-template-columns: 1fr; margin-top: 16px; }
+      .row { grid-template-columns: 1fr; gap: 0; }
+      .card { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span>◆</span>{{ app_name }}</div>
+  <div class="model">Model: {{ model }}</div>
+</header>
+
+<main class="grid">
+  <section class="card">
+    <h1>Write a product description</h1>
+    <p class="lead">Enter facts you can back up. Rules choose the length, format and emphasis, the AI writes, and a claim checker reviews the result.</p>
+
+    {% if errors %}
+      <div class="alert" role="alert">
+        <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+      </div>
+    {% endif %}
+
+    <form method="post" id="gen-form" novalidate>
+      <label for="product_name">Product name</label>
+      <input id="product_name" name="product_name" type="text" maxlength="120"
+             value="{{ form.product_name }}" placeholder="e.g., TrailRunner Leather Boots" required>
+
+      <label for="keywords">Keywords and product facts <span class="sub">(comma-separated)</span></label>
+      <textarea id="keywords" name="keywords" maxlength="600" required
+                placeholder="e.g., full-grain leather upper, rubber outsole, padded collar, water-resistant finish">{{ form.keywords }}</textarea>
+      <p class="hint">Only include facts you can verify. Anything the AI adds beyond them gets flagged.</p>
+
+      <label for="audience">Target audience</label>
+      <input id="audience" name="audience" type="text" maxlength="120" list="audience-list"
+             value="{{ form.audience }}" placeholder="e.g., Beginner hikers" required>
+      <datalist id="audience-list">
+        {% for a in audiences %}<option value="{{ a }}"></option>{% endfor %}
+      </datalist>
+
+      <div class="row">
+        <div>
+          <label for="tone">Tone</label>
+          <select id="tone" name="tone">
+            <option value="{{ auto_tone }}" {% if form.tone == auto_tone %}selected{% endif %}>Let the rules choose</option>
+            {% for key, (label, _guide) in tones.items() %}
+              <option value="{{ key }}" {% if form.tone == key %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label for="channel">Sales channel</label>
+          <select id="channel" name="channel">
+            {% for key, spec in channels.items() %}
+              <option value="{{ key }}" {% if form.channel == key %}selected{% endif %}>{{ spec.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="primary" id="submit-btn">Generate description</button>
+        <button type="button" class="ghost" id="example-btn">Fill example</button>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    {% if result %}
+      <article class="card" aria-labelledby="result-heading">
+        <div class="card-head">
+          <h2 id="result-heading">Generated description</h2>
+          <button type="button" class="ghost" id="copy-btn">Copy</button>
+        </div>
+        <div class="result" id="result-text">{{ result.description }}</div>
+        <p class="meta">
+          {{ result.plan.channel_label }} · {{ result.plan.tone_label }} · {{ result.checks.word_count }} words ·
+          {{ result.seconds }} s · {{ result.calls }} model call{{ 's' if result.calls != 1 }} · {{ result.model }}
+        </p>
+      </article>
+
+      <article class="card" aria-labelledby="check-heading">
+        <h2 id="check-heading">Claim check</h2>
+        {% if result.checks.flags %}
+          <div class="status review">{{ result.checks.flags|length }} item{{ 's' if result.checks.flags|length != 1 }} need human review before publishing</div>
+        {% else %}
+          <div class="status good">No unsupported claims found</div>
+        {% endif %}
+
+        {% if result.retried %}
+          <p class="note">
+            The first draft had {{ result.first_flags|length }} flagged item{{ 's' if result.first_flags|length != 1 }}
+            ({% for f in result.first_flags %}"{{ f.term }}"{{ ", " if not loop.last }}{% endfor %}),
+            so the app asked the model for one rewrite: {{ result.retry_note }}.
+          </p>
+        {% endif %}
+
+        <ul class="checks">
+          <li class="{{ 'ok' if result.checks.length_status == 'ok' else 'warn' }}">
+            Length: {{ result.checks.word_count }} words (target {{ result.checks.min_words }}–{{ result.checks.max_words }})
+            {% if result.checks.length_status != 'ok' %}— {{ result.checks.length_status }}{% endif %}
+          </li>
+          <li class="{{ 'ok' if not result.checks.keywords_missing else 'warn' }}">
+            Keywords used: {{ result.checks.keywords_used|length }} of {{ result.checks.keywords_used|length + result.checks.keywords_missing|length }}
+            {% if result.checks.keywords_missing %}
+              <span class="ctx">Not used: {{ result.checks.keywords_missing|join(", ") }}</span>
+            {% endif %}
+          </li>
+          {% for f in result.checks.flags %}
+            <li class="flag"><strong>{{ f.type }}:</strong> "{{ f.term }}" is not in your facts
+              <span class="ctx">…{{ f.context }}…</span>
+            </li>
+          {% endfor %}
+        </ul>
+      </article>
+
+      <article class="card" aria-labelledby="trace-heading">
+        <h2 id="trace-heading">Decision trace</h2>
+        <ol class="trace">
+          {% for step in result.plan.trace %}<li>{{ step }}</li>{% endfor %}
+        </ol>
+      </article>
+
+      <p class="disclaimer">AI-generated copy. A person should verify every claim before it is published.</p>
+    {% else %}
+      <article class="card">
+        <h2>How it works</h2>
+        <ol class="steps">
+          <li><strong>Rules decide.</strong> Your audience is matched to a customer segment, which sets the emphasis and a default tone. The sales channel sets length and format.</li>
+          <li><strong>The AI writes.</strong> The model gets only your approved facts plus the rules' instructions.</li>
+          <li><strong>The checker reviews.</strong> Plain Python flags claims, numbers and hype that are not in your facts. If anything is flagged, the AI gets one chance to rewrite.</li>
+        </ol>
+        <p class="hint">Try "Fill example", then switch the audience or channel and compare.</p>
+      </article>
+    {% endif %}
+  </section>
+</main>
+
+<script>
+  (function () {
+    var form = document.getElementById("gen-form");
+    var submit = document.getElementById("submit-btn");
+    form.addEventListener("submit", function () {
+      submit.disabled = true;
+      submit.textContent = "Generating…";
+    });
+
+    document.getElementById("example-btn").addEventListener("click", function () {
+      document.getElementById("product_name").value = "TrailRunner Leather Boots";
+      document.getElementById("keywords").value =
+        "full-grain leather upper, rubber outsole, padded collar, lace-up closure, water-resistant finish, designed for day hikes";
+      document.getElementById("audience").value = "Beginner hikers";
+      document.getElementById("tone").value = "{{ auto_tone }}";
+      document.getElementById("channel").value = "product_page";
+    });
+
+    var copy = document.getElementById("copy-btn");
+    if (copy) {
+      copy.addEventListener("click", function () {
+        var text = document.getElementById("result-text").innerText;
+        try {
+          navigator.clipboard.writeText(text).then(function () {
+            copy.textContent = "Copied";
+            setTimeout(function () { copy.textContent = "Copy"; }, 1500);
+          });
+        } catch (e) {
+          copy.textContent = "Select and copy";
+        }
+      });
+    }
+  })();
+</script>
+</body>
+</html>
